@@ -8,7 +8,7 @@ It is also easier to build a standard presentation (without any workflow definit
 
 ## Basic call examples
 
-Suppose to want to create a presentation based on a series of images available in folder *C:/temp/images*. Images should comply with this pattern *ID_title[_part][_version]* where :
+Suppose you want to create a presentation based on a series of images available in folder *C:/temp/images*. Images should comply with this pattern *ID_title[_part][_version]* where :
 - ID is a unique identifier (integer), ID may be not unique when part or version number differs
 - title is an arbitrary title for the slide,
 - part is an optional part number (to display slide parts vertically)
