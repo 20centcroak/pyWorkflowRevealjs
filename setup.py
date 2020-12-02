@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyWorkflowRevealjs", 
-    version="0.1",
+    version="0.2",
     author="20centCroak",
     author_email="",
     description="revealjs based presentation",
