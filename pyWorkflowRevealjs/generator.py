@@ -80,7 +80,6 @@ class Generator(launcher.Settings):
     def _manageImages(self, slides: Slides):
         if not self.imageFolder:
             return
-        print(self.imageFolder)
         slides.catalog(self.imageFolder, images=True)
 
     def _manageSlides(self):
