@@ -5,7 +5,8 @@ from webbrowser import open as webopen
 from pandas import read_csv
 import distutils.dir_util as dirutil
 import pyBaseApp.applauncher as launcher
-from pyRevealjs import Slides
+from pyRevealjs import SlideCatalog
+from pyRevealjs import PresentationSettings
 from pySimpleWorkflow import Workflow
 from pyWorkflowRevealjs.slidesToWorkflow import SlidesToWorkflow
 from pyWorkflowRevealjs.workflowToPresentation import WorkflowToPresentation
@@ -56,6 +57,8 @@ class Generator(launcher.Settings):
         self.createLinearPresentations = False
         self.createWorkflowPresentation = True
         self.displayTitles = False
+        self.theme = None
+        self.title = None
         self.setProperties(settings)
 
         self._build()
@@ -65,7 +68,7 @@ class Generator(launcher.Settings):
         self._manageImages(slides)
         workflow = self._manageWorkflow(slides)
         self._manageMissingSlides(slides, workflow)
-        pres = self._generate(workflow, slides)
+        pres = self._generate(workflow, slides, self._generateGeneralSettings())
         self.open(pres)
 
     def open(self, filename):
@@ -77,21 +80,29 @@ class Generator(launcher.Settings):
         logging.info('opening presentation at url {}'.format(url))
         webopen(url, new=new)
 
-    def _manageImages(self, slides: Slides):
+    def _generateGeneralSettings(self):
+        settings = PresentationSettings()
+        if self.title:
+            settings.title = self.title 
+        if self.theme:
+            settings.theme = self.theme
+        return settings
+
+    def _manageImages(self, catalog: SlideCatalog):
         if not self.imageFolder:
             return
-        slides.catalog(self.imageFolder, images=True)
+        catalog.catalog(self.imageFolder, images=True)
 
     def _manageSlides(self):
-        slides = Slides(self.displayTitles)
+        catalog = SlideCatalog()
         if self.slideFolder:
-            slides.catalog(self.slideFolder)
+            catalog.catalog(self.slideFolder)
         else:
             self.slideFolder = os.path.join(self.outputFolder, 'slides')
 
-        return slides
+        return catalog
 
-    def _manageWorkflow(self, slides: Slides):
+    def _manageWorkflow(self, catalog: SlideCatalog):
         if self.workflowFile:
             try:
                 return Workflow(read_csv(
@@ -99,24 +110,24 @@ class Generator(launcher.Settings):
             except FileNotFoundError:
                 launcher.error('file {} not found'.format(self.workflowFile))
 
-        if not slides.getDefaultSlideOrder():
+        if not catalog.getDefaultSlideOrder():
             launcher.error('no workflow or slide found')
 
-        return Workflow(SlidesToWorkflow().create(slides), 'presentation')
+        return Workflow(SlidesToWorkflow().create(catalog), 'presentation')
 
-    def _manageMissingSlides(self, slides: Slides, workflow: Workflow):
-        slides.createMissingSlides(
+    def _manageMissingSlides(self, catalog: SlideCatalog, workflow: Workflow):
+        catalog.createMissingSlides(
             [step.stepId for step in workflow.getSteps()])
 
-    def _generate(self, workflow: Workflow, slides: Slides):
+    def _generate(self, workflow: Workflow, catalog: SlideCatalog, settings: PresentationSettings):
         toPres = WorkflowToPresentation(
-            workflow, slides, self.outputFolder)
+            workflow, catalog, self.outputFolder)
 
         presentation = None
         for version in self.versions:
             logging.info('version {} ...'.format(version))
             if self.createLinearPresentations:
-                presentation = toPres.createLinearPresentations(version)
+                presentation = toPres.createLinearPresentations(version, settings)
             if self.createWorkflowPresentation:
-                presentation = toPres.createWorkflowPresentation(version)
+                presentation = toPres.createWorkflowPresentation(version, settings)
         return presentation

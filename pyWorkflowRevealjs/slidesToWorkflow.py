@@ -1,4 +1,4 @@
-from pyRevealjs import Slides
+from pyRevealjs import SlideCatalog
 from pandas import DataFrame
 
 
@@ -9,15 +9,15 @@ class SlidesToWorkflow:
     Each step has 1 next (1->2), (2->5), (5->9). The slide title defines the step title.
     """
 
-    def create(self, slides: Slides):
+    def create(self, catalog: SlideCatalog):
         """
         create a pandas workflow definition from a Slides object
         ---Parameters:
         - slides: Slides object used to create a pandas workflow definition
         """
-        slideIds = slides.getDefaultSlideOrder()
+        slideIds = catalog.getDefaultSlideOrder()
 
-        titles = ["" for slideId in slides.slides]
+        titles = ["" for slideId in catalog.getAllIds()]
 
         nexts = [slideIds[index+1]
                  for index, id in enumerate(slideIds) if index < len(slideIds)-1]
